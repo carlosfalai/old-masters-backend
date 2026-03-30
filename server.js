@@ -61,15 +61,16 @@ app.use(cors({
   credentials: true
 }));
 
-// HTTPS enforcement in production
-if (process.env.NODE_ENV === 'production') {
-  app.use((req, res, next) => {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
-      return res.redirect(`https://${req.headers.host}${req.url}`);
-    }
-    next();
-  });
-}
+// HTTPS enforcement — only behind a reverse proxy (Caddy/ALB) that sets x-forwarded-proto
+// Disabled for direct EC2 access until SSL is configured via Caddy/ALB
+// if (process.env.NODE_ENV === 'production') {
+//   app.use((req, res, next) => {
+//     if (req.headers['x-forwarded-proto'] !== 'https') {
+//       return res.redirect(`https://${req.headers.host}${req.url}`);
+//     }
+//     next();
+//   });
+// }
 
 // Stripe webhooks need raw body — mount BEFORE json middleware
 app.use('/api/webhook', express.raw({ type: 'application/json' }), webhookRoutes);
